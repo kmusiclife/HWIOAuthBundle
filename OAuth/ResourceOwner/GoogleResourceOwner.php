@@ -60,7 +60,6 @@ class GoogleResourceOwner extends GenericOAuth2ResourceOwner
         if (isset($this->options['access_type'])) {
             $extraParameters['access_type'] = $this->getOption('access_type');
         }
-        $extraParameters['approval_prompt'] = 'force';
         return parent::getAuthorizationUrl($redirectUri, $extraParameters);
         
     }
