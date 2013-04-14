@@ -22,6 +22,12 @@ use Symfony\Component\HttpFoundation\Request,
  */
 class GoogleResourceOwner extends GenericOAuth2ResourceOwner
 {
+    
+    /**
+     * {@inheritDoc}
+     */
+    public $response = null;
+    
     /**
      * {@inheritDoc}
      */
@@ -31,6 +37,7 @@ class GoogleResourceOwner extends GenericOAuth2ResourceOwner
         'infos_url'           => 'https://www.googleapis.com/oauth2/v1/userinfo',
         'scope'               => 'userinfo.profile',
         'user_response_class' => '\HWI\Bundle\OAuthBundle\OAuth\Response\AdvancedPathUserResponse',
+        'access_type'         => 'offline',
     );
 
     /**
@@ -43,4 +50,47 @@ class GoogleResourceOwner extends GenericOAuth2ResourceOwner
         'email'          => 'email',
         'profilepicture' => 'picture',
     );
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAuthorizationUrl($redirectUri, array $extraParameters = array())
+    {
+        
+        if (isset($this->options['access_type'])) {
+            $extraParameters['access_type'] = $this->getOption('access_type');
+        }
+        $extraParameters['approval_prompt'] = 'force';
+        return parent::getAuthorizationUrl($redirectUri, $extraParameters);
+        
+    }
+    /**
+     * {@inheritDoc}
+     */
+    public function getAccessToken(Request $request, $redirectUri, array $extraParameters = array())
+    {
+        
+        $parameters = array_merge($extraParameters, array(
+            'code'          => $request->query->get('code'),
+            'grant_type'    => 'authorization_code',
+            'client_id'     => $this->getOption('client_id'),
+            'client_secret' => $this->getOption('client_secret'),
+            'redirect_uri'  => $redirectUri,
+        ));
+
+        $this->response = $this->doGetAccessTokenRequest($this->getOption('access_token_url'), $parameters);
+        $this->response = $this->getResponseContent($this->response);
+        
+        if (isset($this->response['error'])) {
+            throw new AuthenticationException(sprintf('OAuth error: "%s"', $this->response['error']));
+        }
+
+        if (!isset($this->response['access_token'])) {
+            throw new AuthenticationException('Not a valid access token.');
+        }
+        
+        return $this->response['access_token'];
+        
+    }
+    
 }
