@@ -38,6 +38,7 @@ class GoogleResourceOwner extends GenericOAuth2ResourceOwner
         'scope'               => 'userinfo.profile',
         'user_response_class' => '\HWI\Bundle\OAuthBundle\OAuth\Response\AdvancedPathUserResponse',
         'access_type'         => 'offline',
+        'approval_prompt'     => 'auto',
     );
 
     /**
@@ -59,6 +60,9 @@ class GoogleResourceOwner extends GenericOAuth2ResourceOwner
         
         if (isset($this->options['access_type'])) {
             $extraParameters['access_type'] = $this->getOption('access_type');
+        }
+        if (isset($this->options['approval_prompt'])) {
+            $extraParameters['approval_prompt'] = $this->getOption('approval_prompt');
         }
         return parent::getAuthorizationUrl($redirectUri, $extraParameters);
         

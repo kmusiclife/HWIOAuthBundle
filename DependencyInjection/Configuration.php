@@ -149,6 +149,8 @@ class Configuration implements ConfigurationInterface
                         ->end()
                         ->scalarNode('access_type')
                         ->end()
+                        ->scalarNode('approval_prompt')
+                        ->end()
                         ->scalarNode('infos_url')
                             ->validate()
                                 ->ifTrue(function($v) {
@@ -234,6 +236,10 @@ class Configuration implements ConfigurationInterface
                             
                             // Only validate the 'offline' or 'online' for access_type
                             if ('offline' !== $c['access_type'] && 'online' !== $c['access_type']){
+                                return true;
+                            }
+                            // Only validate the 'force' or 'auto' for approval_prompt
+                            if ('force' !== $c['approval_prompt'] && 'auto' !== $c['approval_prompt']){
                                 return true;
                             }
                             
