@@ -147,6 +147,8 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('client_secret')
                             ->cannotBeEmpty()
                         ->end()
+                        ->scalarNode('access_type')
+                        ->end()
                         ->scalarNode('infos_url')
                             ->validate()
                                 ->ifTrue(function($v) {
@@ -204,7 +206,7 @@ class Configuration implements ConfigurationInterface
                             if (isset($c['service'])) {
                                 return false;
                             }
-
+                            
                             // for each type at least these have to be set
                             $children = array('type', 'client_id', 'client_secret');
                             foreach ($children as $child) {
@@ -219,11 +221,32 @@ class Configuration implements ConfigurationInterface
                     ->end()
                     ->validate()
                         ->ifTrue(function($c) {
+                            
                             // skip if this contains a service
                             if (isset($c['service'])) {
                                 return false;
                             }
-
+                            
+                            // Only validate the 'google' type
+                            if ('google' !== $c['type']) {
+                                return false;
+                            }
+                            
+                            // Only validate the 'offline' or 'online' for access_type
+                            if ('offline' !== $c['access_type'] && 'online' !== $c['access_type']){
+                                return true;
+                            }
+                            
+                        })
+                        ->thenInvalid("google access_token parameter is mandatory 'online' or 'offline'.")
+                    ->end()
+                    ->validate()
+                        ->ifTrue(function($c) {
+                            // skip if this contains a service
+                            if (isset($c['service'])) {
+                                return false;
+                            }
+                            
                             // Only validate the 'oauth2' and 'oauth1' type
                             if ('oauth2' !== $c['type'] && 'oauth1' !== $c['type']) {
                                 return false;
@@ -247,7 +270,7 @@ class Configuration implements ConfigurationInterface
                             if (isset($c['service'])) {
                                 return false;
                             }
-
+                            
                             // Only validate the 'oauth2' and 'oauth1' type
                             if ('oauth2' !== $c['type'] && 'oauth1' !== $c['type']) {
                                 return false;
